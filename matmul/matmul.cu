@@ -1,10 +1,4 @@
 #include "matmul.hpp"
-#include <stdio.h>
-
-int fuck() {
-  printf("fuck\n");
-  return 0;
-}
 
 #define CEIL_DIV(N, div) ((N + div - 1) / div)
 
@@ -26,36 +20,47 @@ __global__ void matmul_1d_tiling(const float *A, const float *B, float *C) {
   __shared__ float A_tile_cache[BM][BK];
   __shared__ float B_tile_cache[BK][BN];
 
+  int row = threadIdx.x / BN;
+  int col = threadIdx.x % BN;
+  float accum = 0.0;
+
   // load A/B tile into the shared memory
   for (int k = 0; k < CEIL_DIV(K, BK); k++) {
-    // Move A_tile pointer towards the row (K-dimention) until the end
-    A_tile = A_tile + k * BK;
-    B_tile = B_tile + k * BK * N;
     int K_remaining = K - k * BK;
 
     for (int tid = threadIdx.x; tid < BM * BK; tid += BM * BN) {
       int row = tid / BK;
       int col = tid % BK;
       A_tile_cache[row][col] =
-          row < M_remaining && col < K_remaining ? A_tile[row * K + col] : 0;
+          row < M_remaining && col < K_remaining
+              ? A_tile[row * K + k * BK + col]
+              : 0.0F;
     }
 
     for (int tid = threadIdx.x; tid < BK * BN; tid += BM * BN) {
       int row = tid / BN;
       int col = tid % BN;
       B_tile_cache[row][col] =
-          row < K_remaining && col < N_remaining ? B_tile[row * N + col] : 0;
+          row < K_remaining && col < N_remaining
+              ? B_tile[(k * BK + row) * N + col]
+              : 0.0F;
     }
 
     __syncthreads();
 
-    float accum = 0.0;
-    int row = threadIdx.x / BN;
-    int col = threadIdx.x % BN;
     for (int k = 0; k < BK; k++) {
-      accum +=
-          A_tile_cache[threadIdx.x / BN][k] * B_tile_cache[k][threadIdx.x % BN];
+      accum += A_tile_cache[row][k] * B_tile_cache[k][col];
     }
-    row < M_remaining &&col < N_remaining ? C[row * N + col] = accum : 0;
+
+    __syncthreads();
+  }
+
+  if (row < M_remaining && col < N_remaining) {
+    C_tile[row * N + col] = accum;
   }
 }
+
+template __global__ void matmul_1d_tiling<37, 29, 53, 16, 16, 16>(const float *, const float *,
+                                                                     float *);
+template __global__ void matmul_1d_tiling<1024, 1024, 1024, 16, 16, 16>(
+    const float *, const float *, float *);
