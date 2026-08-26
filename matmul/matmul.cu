@@ -3,6 +3,11 @@
 #define CEIL_DIV(N, div) ((N + div - 1) / div)
 
 // Compute (M, K) @ (N, K)
+// 
+// Implement block tiling, where block threads collectively compute the 
+// result through shared memory. 
+//
+// 
 template <int M, int N, int K, int BM, int BN, int BK>
 __global__ void matmul_1d_tiling(const float *A, const float *B, float *C) {
   // block size must be BM*BN
@@ -64,6 +69,8 @@ template __global__ void
 matmul_1d_tiling<1024, 1024, 1024, 16, 16, 16>(const float *, const float *,
                                                float *);
 
+// The 2d thread tiling, where the compute intensity of a thread is incresased by 
+// computing the TM*TN results.
 __global__ void matmul_2d_tiling(int M, int N, int K, const float *A,
                                  const float *B, float *C) {
   // Define basic operation sizes
@@ -115,7 +122,8 @@ __global__ void matmul_2d_tiling(int M, int N, int K, const float *A,
                                    : 0.0;
     }
 
-    for (int tid = threadIdx.x; tid < BM * BK; tid += block_size) {
+    // B_tile_cache contains BK*BN values; load the complete tile.
+    for (int tid = threadIdx.x; tid < BK * BN; tid += block_size) {
       int row = tid / BN;
       int col = tid % BN;
       B_tile_cache[row][col] = (row < K_remaining && col < N_remaining)
