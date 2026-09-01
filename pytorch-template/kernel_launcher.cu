@@ -14,7 +14,7 @@ inline void specialized_kernel(float* a, float* b, float* c, int N) {
     kernel_template<launch_traits>(a, b, c, N);
 }
 
-torch::Tensor vector_add(torch::Tensor a, torch::Tensor b) {
+torch::Tensor add(torch::Tensor a, torch::Tensor b) {
     // Check cuda tensors
     TORCH_CHECK(a.device().is_cuda() && b.device().is_cuda(), "non-cuda device tensor");
     TORCH_CHECK(a.numel() == b.numel(), "invalid tensor size");
@@ -23,6 +23,8 @@ torch::Tensor vector_add(torch::Tensor a, torch::Tensor b) {
     torch::Tensor output = torch::empty(a.numel(), a.options());
 
     specialized_kernel(a.data_ptr<float>(),b.data_ptr<float>(), output.data_ptr<float>(), a.numel());
+
+    return output;
 }
 
 // This is required to build the required python module

@@ -4,6 +4,7 @@ import sys
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build"))
 import vector_add  # noqa: E402
 
 def main():
@@ -13,3 +14,7 @@ def main():
     torch.testing.assert_close(output, input1 + input2)
 
     print("done")
+
+
+if __name__ == "__main__":
+    main()
