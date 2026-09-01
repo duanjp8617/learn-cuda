@@ -24,7 +24,7 @@ endif()
 
 # Source file
 # Add target for asyncAPI
-add_executable(matmul main.cu matmul.cu)
+add_executable(matmul main.cu matmul.cu matmul_iterator.cu)
 
 target_compile_options(matmul PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>)
 
