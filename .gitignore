@@ -4,3 +4,4 @@ matadd/
 build
 Common
 cublas-test/
+/cutlass/
