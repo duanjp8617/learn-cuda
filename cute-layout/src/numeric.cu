@@ -243,3 +243,31 @@ void test_integer_sequence() {
   // The iostream overload
   std::cout<<const_val<<" expecting _411\n";
 }
+
+void test_ratio() {
+  // cutlass provide a ratio constant
+  auto r = cute::ratio(cute::C<4>{}, cute::C<2>{});
+  // Here r is basically C<2> because the denominator 
+  // is 1. It is automatically reduced to C<2>
+  std::cout<<r<<" \n";
+
+  // cutlass provide a ratio constant
+  auto r1 = cute::ratio(cute::C<8>{}, cute::C<6>{});
+  // Here r1 is R<4,3>, which is the actual ratio containing 
+  // a nominator / denominator
+  std::cout<<r1<<" \n";
+  // Cute's ratio automatically devide nominator and denominator
+  // by their gcd.
+  std::cout<<decltype(r1)::num<<" \n";
+  std::cout<<decltype(r1)::den<<" \n";  
+}
+
+void test_math() {
+  // provide some runtime functions for calcualting 
+  // certain math.
+
+  // Note that these are runtime functions. The compile 
+  // time constant call these functions in template specialization
+
+  std::cout<<cute::gcd(6,4)<<" \n";
+}

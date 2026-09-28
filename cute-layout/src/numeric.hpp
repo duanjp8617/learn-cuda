@@ -12,3 +12,6 @@ void test_integer_sequence();
 // compile-time compute of C<N>
 void test_integral_constant();
 
+void test_ratio();
+
+void test_math();
