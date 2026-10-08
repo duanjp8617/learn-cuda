@@ -6,6 +6,7 @@
 #include "numeric.hpp"
 #include "container.hpp"
 #include "util.hpp"
+#include "int_tuple.hpp"
 
 int main() {
 
@@ -17,7 +18,13 @@ int main() {
   // test_integer_sequence();
   // test_math();
 
-  test_tuple();
+  // test_tuple();
+
+  // init_fuck();
+  // pre_tuple_transform();
+  // pre_tuple_transform();
+  // int_tuple();
+  int_tuple_basic_op();
 
   return 0;
 }
