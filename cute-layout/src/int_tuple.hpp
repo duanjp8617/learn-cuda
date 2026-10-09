@@ -327,6 +327,180 @@ CUTE_HOST_DEVICE void int_tuple_basic_op() {
   print(sd_5);
   print("\n");
 
+  // elem_scale, scale the element according to the rhs
+  // requirement, lhs and rhs must be weakly congruent
+  print(elem_scale(
+    tuple<C<5>, C<4>>{},
+    tuple<tuple<C<2>, C<3>>, C<7>>{}
+  ));
+  print("\n");
+
+  // congruent, test if two tuples have exactly the same profile
+  print(congruent(
+    make_tuple(make_tuple(5,4), 3, 2),
+    tuple<tuple<C<7>, C<8>>, C<1>, C<0>>{}
+  ));
+  print("\n");
+
+  
+  // weakly_congruent requires that for each leaf in the lhs,
+  // there is either a integer or a tuple at the corresponding
+  // position in the rhs
+  print(weakly_congruent(
+    make_tuple(3, 3, 2),
+    tuple<tuple<C<7>, C<8>>, C<1>, C<0>>{}
+  ));
+  print("\n");
+
+  // Compatible is simlar to weakly_congruent, but it requires that
+  // the size of each lhs leaf is the same as the corresponding part 
+  // on the rhs. 
+  print(compatible(
+    make_tuple(56, 1, 0),
+    tuple<tuple<C<7>, C<8>>, C<1>, C<0>>{}
+  ));
+  print("\n");
+
+  print(compatible(
+    tuple<C<56>, C<1>, C<0>>{},
+    tuple<tuple<C<7>, C<8>>, C<1>, C<0>>{}
+  ));
+  print("\n");
+
+  // evenly divides checks if a shape can be evenly dvided by its tiler. 
+
+  // p1: this can not be evenly divded. it requires that 
+  // the rank of lhs arg is larger than rank of rhs. 
+  print(evenly_divides(
+    tuple<C<16>, C<18>>{}, 
+    tuple<tuple<C<2>, C<2>>, tuple<C<2>, C<3>>>{}
+  ));
+  print("\n");
+
+  // p2: corret evenly divide result
+  print(evenly_divides(
+    tuple<C<16>, C<18>>{}, 
+    tuple<C<8>, C<9>>{}
+  ));
+  print("\n");
+  
+  // p2: corret evenly divide result
+  // 
+  print(evenly_divides(    
+    tuple<tuple<C<2>, C<8>>, tuple<C<6>, C<3>>>{},
+    tuple<C<4>, C<3>>{}
+  ));
+  print("\n");
+  
+  print(filter_zeros(tuple<tuple<C<0>, C<8>>, tuple<C<6>, C<0>>>{}));
+  print("\n");
+
+  // The lex_less, which looks like this
+  // (2) < (3, 4, 5)
+  // (2, 3) < (2, 4, 5)
+  // (2, 3) !< (2) rhs is exahted
+  // (2, 3) < (2, 3, 4), rhs is exhausted
+
+  // basically, we align the two tuples from left to right
+  // compare each element from left to right. 
+  // With the same index, there should be one element 
+  // that is smaller on the lhs. 
+  // Every element prior to that element should be the same
+  // If every element is equal, then lhs should be shorter than rhs
+
+  print(lex_less(
+    make_tuple(2),
+    make_tuple(3, 4, 5)
+  ));
+  print("\n");
+
+  print(lex_less(
+    make_tuple(2, 3),
+    make_tuple(2, 4, 5)
+  ));
+  print("\n");
+
+  print(lex_less(
+    make_tuple(2, 3),
+    make_tuple(2)
+  ));
+  print("\n");
+
+  print(lex_less(
+    make_tuple(2, 3),
+    make_tuple(2, 3, 4)
+  ));
+  print("\n");
+
+  // Does not compile, we can't compare 
+  // a tuple against an integer, which triger
+  // the unimplemented tuple smaller than integer path
+  // print(lex_less(
+  //   make_tuple(make_tuple(1, 4), 3),
+  //   make_tuple(2)
+  // ));
+  // print("\n");
+
+  print(lex_less(
+    make_tuple(make_tuple(1, 4), 3),
+    make_tuple(make_tuple(2, 4))
+  ));
+  print("\n");
+
+  // colex is similar but it compares the values from right to left
+  // as compared to lex
+
+  print(colex_less(
+    make_tuple(4),
+    make_tuple(3, 4, 5)
+  ));
+  print("\n");
+
+  print(colex_less(
+    make_tuple(3,5),
+    make_tuple(2, 4, 5)
+  ));
+  print("\n");
+
+  print(colex_less(
+    make_tuple(2, 3),
+    make_tuple(3)
+  ));
+  print("\n");
+
+  print(colex_less(
+    make_tuple(3, 4),
+    make_tuple(2, 3, 4)
+  ));
+  print("\n");
+
+
+  // finally, elem_less is similar to lex, but it 
+  // requires strict less and does not accept equal elemnts.
+
+  print(elem_less(
+    make_tuple(2),
+    make_tuple(3, 4, 5)
+  ));
+  print("\n");
+
+  print(elem_less(
+    make_tuple(2, 3),
+    make_tuple(2, 4, 5)
+  ));
+  print("\n");
+
+  print(elem_less(
+    make_tuple(2, 3),
+    make_tuple(2)
+  ));
+  print("\n");
+
+  print(elem_less(
+    make_tuple(1, 2),
+    make_tuple(2, 3, 4)
+  ));
+  print("\n");
 }
 
 void init_fuck() { std::cout << "fuck\n"; }
