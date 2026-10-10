@@ -7,6 +7,9 @@
 #include "container.hpp"
 #include "util.hpp"
 #include "int_tuple.hpp"
+#include "t1_layout.hpp"
+#include "arithmetic_tuple.hpp"
+
 
 int main() {
 
@@ -24,7 +27,12 @@ int main() {
   // pre_tuple_transform();
   // pre_tuple_transform();
   // int_tuple();
-  int_tuple_basic_op();
+  // int_tuple_basic_op();
+  // test_compact_major();
+  // test_make_layout();
+  // test_arithmetic_tuple();
+  // test_compact_major();
+  test_idx_crd_conversion();
 
   return 0;
 }
