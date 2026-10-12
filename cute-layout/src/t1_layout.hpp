@@ -169,6 +169,80 @@ void test_idx_crd_conversion() {
   // equipvalent to cord: (2,4) shape: (6, 8) 2*1+4*6
   print("\n");
 
-  
+
+  // crd2idx can be computed together with a stride.
+  // In that case, it returns the final idx after the stride
+  auto shape1 = make_shape(3,5);
+  auto stride1 = make_stride(4, 6);
+  print(crd2idx(make_tuple(2, 3), shape1, stride1));
+  // For the most simple casee, we have 2*4+3*6.
+  print("\n");
+
+  // If the provided coord is an integer, then
+  // crd2idx first treats it as an index and finds out the 
+  // corresponding coordinates, and then comput using the 
+  // regular rule. Actually, idx2crd reuses the computation
+  // logic in of crd2idx.
+  // a 3D shape
+  auto shape2 = make_shape(3,6,7);
+  auto stride2 = make_stride(2,8,9);
+  print(crd2idx(51, shape2, stride2));
+  // first, convert the 51, which is the idx, to the real 3d coord
+  // 51 % 3, (51/3)%6, (51/18)%7
+  // 0         5          2
+  // The result will be 0+40+18 = 58
+  // then calculate the resulting index with stride2
+  print("\n");
+
+  // idx2crd
+  // Treat idx as decimal number and obtain each integer on the 
+  // corresponding coordinate position 
+  // For regular version, we can use 
+  // idx % s0
+  // (idx / s0) % s1
+  // (idx/ (s0*s1)) % s2
+  // ... 
+  // There are multiple ways for implement idx2crd.
+  // One way is to use fold, which constructs the resulting 
+  // coord (congruent with the shape) as an intemediate state,
+  // which also contains the division result used to calculate
+  // each seperate coordinate. 
+  // cute chooses to reuse crd2idx. 
+  // as crd2idx already computes the coordinate result if the provided
+  // coordinate is a simple integer. 
+  // It uses base vector as the stride. 
+  // Therefore, for a shape of (2,3), the stride will be (E<0>, E<1>).
+  // for a cordinate of (1,1), the result will be 
+  // E<0> + E<1>, which are convert to tuple add
+  // (1,0) + (0, 1) -> (1, 1), which is exactly the 
+  // coordinate of index 3.
+  print(idx2crd(51, shape2));
+  // This will be (0,5,2), calculated from 0*E<0>+5*E<1>+2*E<2>
+  print("\n");
+
+  // idx2crd can also carry stride. In that case, it calculate the coordinate
+  // using the shape-stride layout. 
+  // What it does is also quite simple, try to recover the 
+  // congruent shape-stride pair. Then obtain each coordinate
+  // by divinding the stride first and then dividing the corresponding
+  // shape for the remainder. 
+  // Note crd2idx only works for compact layout. 
+  // None compact layout has some problems. 
+  // For instance: shape2 and stride2 form a pair of
+  // non compact layout. So the result second result is not 
+  // (2,4,5). I think this relates to the surjective/bijective
+  // injective relationship talked throughout the cute paper.
+  print(crd2idx(make_tuple(2,4,5), shape2, stride2));
+  print("\n");
+  print(idx2crd(81,shape2, stride2));
+  print("\n");
+
+  // For a compact shape, this becomes correct
+  auto compact_stride = compact_col_major(shape2);
+  print(crd2idx(make_tuple(2,4,5), shape2, compact_stride));
+  print("\n");
+  print(idx2crd(104,shape2, compact_stride));
+  print("\n");
+
 
 }
