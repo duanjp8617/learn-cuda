@@ -7,9 +7,10 @@
 #include "container.hpp"
 #include "util.hpp"
 #include "int_tuple.hpp"
-#include "t1_layout.hpp"
+#include "stride.hpp"
 #include "arithmetic_tuple.hpp"
-
+#include "t1_layout.hpp"
+#include "t2_layout_algebra.hpp"
 
 int main() {
 
@@ -32,7 +33,10 @@ int main() {
   // test_make_layout();
   // test_arithmetic_tuple();
   // test_compact_major();
-  test_idx_crd_conversion();
+  // test_idx_crd_conversion();
+  // test_layout();
+  // test_algebra();
+  test_composition();
 
   return 0;
 }
