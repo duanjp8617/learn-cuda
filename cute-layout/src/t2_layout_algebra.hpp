@@ -183,11 +183,11 @@ void test_composition() {
     print("fuck?\n");
     // The final example looks like this, the rest_stride
     // is smaller than a series of modes. Then it will gradually shrink
-    // the size of the rest_shape, until 1 is reached. 
+    // the size of the rest_shape, until 1 is reached.
     // It fuilly divides an outer mode.
     // inner layout: 0, 5, 10, 15
-    // Every 2 indexes step through the 10 mode of the outer layout. 
-    Layout<Shape<_10, _4, _2>,  Stride<_2, _4, _7>> a;
+    // Every 2 indexes step through the 10 mode of the outer layout.
+    Layout<Shape<_10, _4, _2>, Stride<_2, _4, _7>> a;
 
     // Note, this does not compile, because
     // The first mode is (9/3=3), and can
@@ -202,11 +202,134 @@ void test_composition() {
   }
 
   // Therefore, except for the last mode of the outer layout.
-  // Every other mode in the outer layout must obey some fully 
-  // devided rule. 
+  // Every other mode in the outer layout must obey some fully
+  // devided rule.
   // Either the rest_stride can fully divided these modes.
-  // Or the rest_shape can fully divide the next_shape. 
-  // This is the basic rule of the composition. 
-  // Not any two layouts can be composed together, they must obey 
-  // the layout composition rule. 
+  // Or the rest_shape can fully divide the next_shape.
+  // This is the basic rule of the composition.
+  // Not any two layouts can be composed together, they must obey
+  // the layout composition rule.
+}
+
+void test_complement() {
+  using namespace cute;
+
+  Layout<Shape<_3, _5, _7>, Stride<_3, Int<18>, Int<180>>> a;
+  print("size of a is: %d\n", size(a)());
+  print("index of the last element: %d\n", a(2, 4, 6));
+
+  print(complement(a));
+  print("\n");
+
+  print("size of complement: %d\n", size(complement(a))());
+
+  // Complement requires only a single condition,1
+  // stride(i+1) % (shape(i) * stride(i)) == 0.
+  // This means something like this:
+  // Taking this example as an illustration
+  // what mode 0 covers:
+  // 0...8 (9) elements
+  // What mode 1 covers:
+  // 5 consecutive 0..17
+  // 0...89 (90 elements).
+  // Therefore, between mode i (0) and mode i+1 (1),
+  // Thereare a total of 9 consectutive mode 0 elements
+  // left. These empy elements are what complement methods look for.
+
+  // Also, it also indicates that the layout is injective (every coordinate maps
+  // to exactly one element. )
+}
+
+void test_1d_logical_divide() {
+  // Logical divide against a layout.  
+  // The tiler layout will be transformed into two modes
+  // including the orignal tiler layout and the complement layout.
+  // Then it will be composed with the original layout, resulting
+  // to the similar 2 modes as well. 
+  // The first modes selects from the tiler layout.
+  // The second modse selects the offsets specified in the 
+  // complement layout.  
+
+  using namespace cute;
+  Layout<Shape<_4, _2, _3>, Stride<_2, _1, _8>> a;
+
+  Layout<_4, _2> tiler;
+  auto comp = complement(tiler, shape(coalesce(a)));
+  print(comp);
+  print("\n");
+  print(make_layout(tiler, comp));
+  print("\n");
+
+  auto print_tiler_against_pos = [&](auto pos) {
+    print(tiler(0) + pos);
+    for (auto i = 1; i < size(tiler); i++) {
+      print(" %d", tiler(i) + pos);
+    }
+    print("\n");
+  };
+
+  for (auto i = 0; i < size(comp); i++) {
+    print_tiler_against_pos(comp(i));
+  }
+
+  print("----------------------------\n");
+
+  // It contains 2 modes, the first is the tiler
+  // The second one is the offset selector
+  auto composed_tiler = make_layout(tiler, comp);
+  // composed_tiler(x, y) -> tiler(x) + comp(y);
+  // tiler offset by comp(y);
+  for (auto i = 0; i < size(comp); i++) {
+    for (auto j = 0; j < size(tiler); j++) {
+      print("%d ", composed_tiler(j, i));
+    }
+    print("\n");
+  }
+
+  auto logical_divide_res = logical_divide(a, tiler);
+  print(logical_divide_res);
+  print("\n");
+
+  print("----------------------------\n");
+  for (auto i = 0; i < size(comp); i++) {
+    for (auto j = 0; j < size(tiler); j++) {
+      print("%d ", logical_divide_res(j, i));
+    }
+    print("\n");
+  }
+  print("----------------------------\n");
+  for (auto i = 0; i < size(comp); i++) {
+    for (auto j = 0; j < size(tiler); j++) {
+      print("%d ", a(composed_tiler(j, i)));
+    }
+    print("\n");
+  }
+}
+
+void test_2d_logical_divide() {
+  using namespace cute;
+  Layout<Shape<Int<9>,   Shape<Int<4>, Int<8>>>, 
+         Stride<Int<59>, Stride<Int<13>, Int<1>>>> a;
+
+  Tile<Layout<_3, _3>, Layout<Shape<_2,_4>, Stride<_1, _8>>> tiler;
+
+  print(a);
+  print("\n");
+  print(tiler);
+  print("\n");
+
+  auto ld = logical_divide(a, tiler);
+  print(ld);
+  print("\n");
+
+  auto mode_0_div_res = logical_divide(get<0>(a), get<0>(tiler));
+  print(mode_0_div_res);
+  print("\n");
+
+  auto mode_1_div_res = logical_divide(get<1>(a), get<1>(tiler));
+  print(mode_1_div_res);
+  print("\n");
+
+  auto zipped_res = zipped_divide(a, tiler);
+  print(zipped_res);
 }

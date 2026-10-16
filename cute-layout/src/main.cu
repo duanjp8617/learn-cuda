@@ -36,7 +36,8 @@ int main() {
   // test_idx_crd_conversion();
   // test_layout();
   // test_algebra();
-  test_composition();
+  // test_composition();
+  test_2d_logical_divide();
 
   return 0;
 }
