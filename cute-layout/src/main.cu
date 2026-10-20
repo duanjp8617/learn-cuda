@@ -37,7 +37,9 @@ int main() {
   // test_layout();
   // test_algebra();
   // test_composition();
-  test_2d_logical_divide();
+  // test_2d_logical_divide();
+  // test_complement();
+  test_logical_product();
 
   return 0;
 }

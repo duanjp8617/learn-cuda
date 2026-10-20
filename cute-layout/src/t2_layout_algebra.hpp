@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cute/algorithm/tuple_algorithms.hpp"
 #include <cute/layout.hpp>
 
 void test_algebra() {
@@ -223,6 +224,8 @@ void test_complement() {
 
   print("size of complement: %d\n", size(complement(a))());
 
+  print("index of last element %d, %d\n", a(2,4,6), a(2,4,6)+complement(a)(11));
+
   // Complement requires only a single condition,1
   // stride(i+1) % (shape(i) * stride(i)) == 0.
   // This means something like this:
@@ -332,4 +335,69 @@ void test_2d_logical_divide() {
 
   auto zipped_res = zipped_divide(a, tiler);
   print(zipped_res);
+}
+
+void test_logical_product() {
+  using namespace cute;
+  // {
+  //   Layout<Shape<_2, _2>, Stride<_4, _1>> a;
+  //   print(complement(a));
+  //   print("\n");
+
+  //   print("let's examine tiler's effect\n");
+  //   Layout<_6, _1> tiler;
+  //   for(auto i=0; i<size(tiler); i++) {
+  //     print("%d ", complement(a)(tiler(i)));      
+  //   }
+  //   print("\n");
+
+  //   auto manual_logical_product = make_layout(a, composition(complement(a), tiler));
+  //   for(auto i=0; i<size(tiler); i++) {
+  //     for(auto j=0; j<size(a); j++) {
+  //       print("%d ", manual_logical_product(j, i));
+  //     }
+  //     print("\n");
+  //   }
+
+  //   print(manual_logical_product);
+  //   print("\n");
+  // }
+
+  // {
+  //   Layout<Shape<_2,_5>, Stride<_5, _1>> a;
+  //   auto tiler = make_layout(Layout<_3,_1>{}, Layout<_4, _3>{});
+
+  //   print(make_layout(a, composition(complement(a), tiler)));
+  //   print("\n");
+
+  //   print(logical_product(a, tiler));
+  //   print("\n");
+  // }
+
+  {
+    Layout<Shape<_2, _5>, Stride<_5, _1>> a{};
+    Layout<Shape<_3,_4>, Stride<_1, _3>> b{};
+
+    print(max(rank_v<decltype(a)>, rank_v<decltype(b)>));
+    print("\n");
+
+    auto result = logical_product(append<2>(a), append<2>(b));
+    print(result);
+    print("\n");
+
+    print(logical_product(a, b));
+    print("\n");
+
+    print(zip(get<0>(result), get<1>(result)));
+    print("\n");
+
+    print(zip(get<1>(result), get<0>(result)));
+    print("\n");
+
+    print(blocked_product(a,b));
+    print("\n");
+
+    print(raked_product(a,b));
+    print("\n");
+  }
 }
