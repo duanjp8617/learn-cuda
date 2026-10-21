@@ -1,45 +1,52 @@
 // #include <cute/tensor.hpp>
 
-#include <iostream>
-#include <cute/tensor.hpp>
+// #include <iostream>
+// #include <cute/tensor.hpp>
 
-#include "numeric.hpp"
-#include "container.hpp"
-#include "util.hpp"
-#include "int_tuple.hpp"
-#include "stride.hpp"
-#include "arithmetic_tuple.hpp"
-#include "t1_layout.hpp"
-#include "t2_layout_algebra.hpp"
+// #include "numeric.hpp"
+// #include "container.hpp"
+// #include "util.hpp"
+// #include "int_tuple.hpp"
+// #include "stride.hpp"
+// #include "arithmetic_tuple.hpp"
+// #include "t1_layout.hpp"
+// #include "t2_layout_algebra.hpp"
+#include <cuda_runtime.h>
+#include <iostream>
+
+#include "t3_tensor.hpp"
 
 int main() {
+  float *data = nullptr;
+  cudaError_t err =
+      cudaMalloc(reinterpret_cast<void **>(&data), 1024 * sizeof(float));
 
+  if(err != cudaSuccess) {
+    std::cout<<"can't allocate memory\n";
+    return -1;
+  }
 
-  // test_integral_constant();
-  // test_int_length();
-  // test_integer_sequence();
-  // test_type_traits();
-  // test_integer_sequence();
-  // test_math();
+  run_testor<<<1, 1>>>(data, 16);
 
-  // test_tuple();
+  err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    std::cerr<<"Kernel launch failure: "
+            << cudaGetErrorString(err)
+            << "\n";
+    return 1;
+  }
 
-  // init_fuck();
-  // pre_tuple_transform();
-  // pre_tuple_transform();
-  // int_tuple();
-  // int_tuple_basic_op();
-  // test_compact_major();
-  // test_make_layout();
-  // test_arithmetic_tuple();
-  // test_compact_major();
-  // test_idx_crd_conversion();
-  // test_layout();
-  // test_algebra();
-  // test_composition();
-  // test_2d_logical_divide();
-  // test_complement();
-  test_logical_product();
+  err = cudaDeviceSynchronize();
+  if (err != cudaSuccess) {
+    std::cerr<<"Kernel execution failure: "
+            << cudaGetErrorString(err)
+            << "\n";
+    return 1;
+  }
 
   return 0;
+}
+
+int _main() {
+  test_layout_slice();
 }
