@@ -16,7 +16,7 @@
 
 #include "t3_tensor.hpp"
 
-int main() {
+int _main() {
   float *data = nullptr;
   cudaError_t err =
       cudaMalloc(reinterpret_cast<void **>(&data), 1024 * sizeof(float));
@@ -47,6 +47,6 @@ int main() {
   return 0;
 }
 
-int _main() {
-  test_layout_slice();
+int main() {
+  test_compact_order();
 }

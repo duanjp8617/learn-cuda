@@ -189,3 +189,63 @@ __global__ void run_testor(float *gA, int dynamic_shape) {
 
   }
 }
+
+void test_compact_order() {
+  using namespace cute;
+  
+  Layout<Shape<Int<8>, Int<8>>, Stride<Int<16>, Int<81920>>> a;
+  print(filter_zeros(a.stride(), a.shape()));
+  print("\n");
+  
+  auto s = a.shape();
+  auto d = a.stride();
+
+  print(s);
+  print("\n");
+  print(d);
+  print("\n");
+
+  auto ref_shape = flatten_to_tuple(product_like(s, d));
+
+  auto flat_order = flatten_to_tuple(d);
+
+  print(ref_shape);
+  print("\n");
+  print(flat_order);
+  print("\n");
+  // auto compact_res = compact_order()
+
+  auto max_order = cute::fold(flat_order, Int<0>{}, [](auto v, auto order) {
+    if constexpr (is_constant<true, decltype(v < order)>::value) {
+      return order;
+    } else {
+      return v;
+    }
+
+    CUTE_GCC_UNREACHABLE;
+  });
+
+  print(max_order);
+  print("\n");
+
+  auto max_seq = make_range<max_order+1, max_order+1+rank(flat_order)>{};
+  auto ref_order = cute::transform(max_seq, flat_order, [](auto seq_v, auto order) {
+    if constexpr (is_static<decltype(order)>::value) {
+      return order;
+    } else {
+      return seq_v;
+    }
+
+    CUTE_GCC_UNREACHABLE;
+  });
+
+  auto new_order = unflatten(ref_order, d);
+
+  print(s); print("\n");
+  print(new_order); print("\n");
+  print(ref_shape); print("\n");
+  print(ref_order); print("\n");
+
+  print( detail::compact_order(s, new_order, ref_shape, ref_order));
+  print("\n");
+}
