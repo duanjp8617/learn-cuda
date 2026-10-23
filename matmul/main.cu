@@ -459,7 +459,7 @@ int main() {
 //       run_benchmark_iterator<1024, 1024, 1024, BM, BN, BK>();
 //   print_iterator_comparison("1D tiling", manual_1d, iterator_1d);
 
-  const BenchmarkResult manual_2d = run_benchmark_2d<1024, 1024, 1024>();
+  const BenchmarkResult manual_2d = run_benchmark_2d<5120, 5120, 4096>();
   // const BenchmarkResult iterator_2d = run_benchmark_2d_iterator<1024, 1024, 1024>();
   // print_iterator_comparison("2D tiling", manual_2d, iterator_2d);
   return EXIT_SUCCESS;

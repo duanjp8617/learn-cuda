@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.18)
+
+set(SGEMM_PROJECT_NAME sgemm_1)
+
+# Detect the build machine's first GPU architecture before CUDA compiler setup.
+find_program(NVIDIA_SMI_EXECUTABLE nvidia-smi)
+if(NVIDIA_SMI_EXECUTABLE)
+  execute_process(
+    COMMAND "${NVIDIA_SMI_EXECUTABLE}" "--query-gpu=compute_cap" "--format=csv,noheader"
+    OUTPUT_VARIABLE CUDA_COMPUTE_CAPABILITY_OUTPUT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE NVIDIA_SMI_RESULT
+  )
+  string(REGEX MATCH "^[0-9]+\\.[0-9]+" CUDA_COMPUTE_CAPABILITY "${CUDA_COMPUTE_CAPABILITY_OUTPUT}")
+  if(NVIDIA_SMI_RESULT EQUAL 0 AND CUDA_COMPUTE_CAPABILITY)
+    string(REPLACE "." "" CMAKE_CUDA_ARCHITECTURES "${CUDA_COMPUTE_CAPABILITY}")
+    message(STATUS "Detected CUDA architecture: ${CMAKE_CUDA_ARCHITECTURES}")
+  else()
+    message(WARNING "Could not detect a CUDA architecture; using CMake's compiler default")
+  endif()
+else()
+  message(WARNING "nvidia-smi was not found; using CMake's compiler default CUDA architecture")
+endif()
+
+project(${SGEMM_PROJECT_NAME} LANGUAGES CXX CUDA)
+
+find_package(CUDAToolkit REQUIRED)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CUTLASS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cutlass" CACHE PATH
+    "Path to the CUTLASS source tree")
+if(NOT EXISTS "${CUTLASS_DIR}/include/cute/tensor.hpp")
+  message(FATAL_ERROR "CUTLASS was not found at ${CUTLASS_DIR}")
+endif()
+
+add_executable(${SGEMM_PROJECT_NAME} sgemm_1.cu)
+target_include_directories(${SGEMM_PROJECT_NAME} PRIVATE
+  "${CUTLASS_DIR}/include"
+  "${CUTLASS_DIR}/tools/util/include"
+)
+target_compile_options(${SGEMM_PROJECT_NAME} PRIVATE
+  $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+)
+target_link_libraries(${SGEMM_PROJECT_NAME} PRIVATE CUDA::cudart)
+
